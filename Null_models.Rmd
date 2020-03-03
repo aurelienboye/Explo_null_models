@@ -1,0 +1,468 @@
+---
+title: "Méthodes de randomisation pour générer des modèles nuls dans le cadre d'analyse de sur- et sous dispersion des traits"
+author: "A. Boyé"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+  - \usepackage[francais]{babel}
+  - \usepackage[utf8]{inputenc}
+  - \usepackage[T1]{fontenc}
+  - \usepackage{fontspec}
+output:
+  word_document:
+    toc: true # table of content true
+    toc_depth: 5  # up to 5 depths of headings (specified by #, ## and ###)
+  #rmdformats::readthedown:
+    #code_folding: "hide"
+    #highlight: "tango"
+    #lightbox: TRUE
+  #pdf_document:
+    #latex_engine: xelatex
+    #toc: true
+    #highlight: zenburn
+    #keep_tex: TRUE
+urlcolor: blue
+citecolor: red
+bibliography: null_models.bib # bibliographie
+link-citations: true # Lien html pour les citations
+csl: ecology-letters.csl # Style de citation
+---
+
+```{r packages, echo = FALSE, message=F}
+library(vegan)
+library(picante)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+---
+
+# <u> **Idée principale** </u> 
+
+Randomizer nos communautés avec certaines contraintes pour voir l'écart entre FD observée et FD simulée $\Rightarrow$ écart entre distribution observée des traits et distribution attendu sous hypothèse nulle de distribution random.
+
+  - **Overdispersion** : serait témoin de l'effet des intéractions biotiques qui a tendance à favoriser la distinction des niches entre espèces ainsi qu'une plus grande régularité dans l'espace des traits (*limiting similarity*)
+      - Voir @mouillot2013indic
+      - Voir discussion @dandrea_ostling2016 sur les limites de cette interprétation et sur les patrons à attendre
+  - **Underdispersion** : témoin de l'effet de filtres environnementaux 
+      - si c'est le cas on peut pour aller plus loin et comprendre les facteurs à l'origine de cette underdispersion faire : 
+          - RLQ
+          - quatrième coin (lien individuel entre trait et envir qui colle assez bien à la démarche individuelle de cette analyse)
+          - ou varpart sur matrice abondance de trait avec $envir + MEM$ : voir @zhang2018 ou @astor2014trait_dispersion pour CWM-RDA; dont avantages sont décrits par @kleyer2012methods
+              - ou developper partition variance avec RLQ à partir de RLQ partielle [@wesuls2012partialRLQ]
+
+> **Attention** : cela est différent de modèle neutre qui décrit les espèces comme équivalente et explique leur pattrons par les processus de dispersion, l'état démographique des populations et la distribution spatiale des espèces mais qui nécessite un paramétrage impossible à faire dans notre cas. Utiliser des modèles nulles - randomization stat - ou des modèles neutres amènent souvent des résultats différents, et il y a des partisans de chacune de ces méthodes [voir @dandrea_ostling2016]
+
+---
+
+# <u> **Méthode** </u>
+
+## **Calcul de l'écart avec les communautées simulées**
+
+L'écart entre les observations et les modèles nuls peut notamment être calculé par Standard size effect [@gotelli_mccabe2002] :
+
+$SES = \frac{FD_{observed} - \mu_{null}}{\sigma_{null}}$
+
+---
+
+## **Indice fonctionnel à utiliser**
+
+Le plus souvent cela est fait sur l'indice $RaoQ$ [*e.g.* @astor2014trait_dispersion; @zhang2018] mais cela a aussi été fait avec le $FRic$ et la $FDis$ [@laliberte2013;@mason2013]. Potentiellement cela peut etre fait avec l'indice de $distinctiveness$ de @violle2017functional_rarity qui se trouve dans le package `funrar` de @grenie2017funrar
+
+> $Functional~distinctiveness$ : mean functional distance of species $i$ to the $N$ other species. Can  be weighted by species relative abundance because a species i even more distinct if it does not share traits with the most abundant species within the community [ @violle2017functional_rarity]. This measure can then be averaged at the scale of the community [see @grenie2017funrar]
+
+### Bilan
+
+  - Favoriser $RaoQ$ ou $FDis$ par rapport à $FRic$ [podani2009convex_hulls; in @botta_dukat2016]
+  - Favoriser $FDis$ car moins sensibles aux espèces aux traits extrêmes ? [@laliberte2010FDis;@laliberte2013]
+  - $RaoQ$ pourrait permetre d'évaluer en même temps $SES_{FRed}$ sur la redondance en simulant $1 - \frac{RaoQ}{SimD}$
+
+---
+
+## **Analyse *single-trait* versus *mutli-trait***
+
+Le calcule de l'indice de diversité sur les données observées ou simulées peut se faire sur chaque trait séparément [*e.g.* @astor2014trait_dispersion; ou @zhang2018] ou sur l'ensemble des traits simultanément [voir @perronne2017 pour discussion du sujet] 
+
+> Assembly processes may act contrastingly on different traits [@spasojevic2012]. Indeed, @spasojevic2012 show that multiple assembly processes (abiotic filtering, above‐ground competition, and below‐ground competition) operated simultaneously to structure plant communities and that they were therefore obscured by a single multivariate trait index and only evident by analysing functional diversity patterns of individual traits.
+
+> @perronne2017 : although metrics have been proposed for both single-trait and multi-trait approaches, results from multivariate approaches may be more difficult to understand, especially when several processes can lead to fitness equalization via trade-offs among traits in multi-dimensional niches (Clark et al., 2007). In addition, the use of a multi-trait approach reveals several practi- cal restrictions (Lepsˇ et al., 2006) leading to a lower detection of the signature of the underlying mechanisms (Aiba et al., 2013). For instance, correlations between traits may require removing some redundant traits, and using different types of variables needs appro- priate standardization or transformation (Lepsˇ et al., 2006; Petchey and Gaston, 2006; Bernhardt-Römermann et al., 2008).
+
+### Bilan
+
+  - le faire en *single_trait* pour $RaoQ$ et en *multi-trait* pour $FRed$, potentiellement en séparant trait effet et réponse ?
+
+---
+
+## **Pool d'espèce sur lequel randomiser ?**
+
+- Randomiser au sein de chaque habitat avec le pool d'espèce capable de vivre dans cet habitat **ou** en intertidal et subtidal séparément mais en randomisant entre les habitats biogéniques et nus au sein de chaque frange tidale ? 
+
+- Le faire aussi pour chaque année séparemment ou randomiser toutes années confondus en considérant qu'il y a un pool d'espèces régional et que certaines années on en loupe ? 
+
+Selon @perronne2017 [ : p.38] *"a reference species pool includes all species that may potentially disperse to a specific site"*. Certaines études prennent même en compte dans leur randomisation des espèces issues d'inventaires régionaux mais pas échantillonnées dans leur analyse.
+
+The study of environmental filtering should be done at broad spatial scale, encompassing contrasted environments and with randomization technique that randomize species accross the different environmental conditions [@gotzenberger2016randomizations; @perronne2017]
+
+### Bilan
+
+  - Prendre donc dans la randomisation toutes les années confondus pour représenter ainsi le pool d'espèces trouvé dans la région ansi que pour chaque niveau tidal les deux habitats ensemble dans la randomisation *i.e.* randomiser entre HI et IM ensemble et entre SM et MA ensemble car les espèces trouvées dans chaque habitat aurait le potentiel de se trouver dans l'autre si ce n'était du fait de filtre environnementaux ou de competition (*i.e.* les processus qu'on test)
+
+**Attention** : Cette méthode permet surtout de tester l'effet des filtres environnementaux, pour tester l'effet de la competition *i.e.* **limiting similarity**, il faut randomiser les espèces avec un pool d'espèces qui se limite aux espèces pouvant persister dans l'environnement. Cela peut etre fait en randomisant au sein unité géographique définies par exemple [@perronne2017 : p.38] $\Rightarrow$ **randomiser au sein des sites**
+ 
+> @chalmandrier2013 : Large scales thereby reinforce the detection of the effect of environ- mental gradients, while a small spatial scale is better sui- ted to detect competition (Thuiller et al. 2010; Mouquet et al. 2012).
+
+> Limiting similarity and competitive dominance are harder to detect and should be assessed in homogenous environments at fine scale [@gotzenberger2016randomizations; @perronne2017; @botta_dukat2016]. Species should not be randomize between sites from different environmental conditions [@gotzenberger2016randomizations]
+
+> @perronne2017 : Alternatively, when investigating the signatures of more local ecological processes in a particular environmental context, e.g. studying trait distribution patterns associated with fine-scale disturbances and interactions, the species pool needs to be limited to a subset of species able to persist in these particular environmental condi- tions, i.e. presenting specific functional traits and properties, such as an appropriate phenology or some tolerance or avoidance abil- ities regarding a key abiotic factor (de Bello et al., 2012; Lessard et al., 2012). The pool can then be restricted to the species observed in each sampling unit and ignoring the species from the other sites that constitute the matrix (Bernard-Verdier et al., 2012; Table 4; see Supplementary Appendix B and C for details), potentially includ- ing species from neighboring sources (Lessard et al., 2012; Lessard et al., 2016), or species occurring at regional scale presenting val- ues within the trait range of each particular site, i.e. assuming that species with intermediate trait values could be adapted to local con- ditions of the site considered (e.g. Gotelli and Ellison, 2002; Table 4; Fig. 3A). The pool can also be defined based on operational sub- matrices consisting of environmentally uniform groups of sites, such as types of vegetation (Ding et al., 2012; Pipenbaher et al., 2013) or locations (Richardson et al., 2012), also termed geograph- ical units (Cornell and Harrison, 2014). These options specifically addresses the influence of local niche-based mechanisms while controlling the influence of environmental filtering playing at a larger habitat scale
+
+---
+
+## **Quelle type de randomisation pour le modèle nul**
+
+- Maintenir richesse fixe
+
+> "*For instance, modifying species richness at a site, i.e. row marginal sums, will impact the values of most functional metrics currently available (Mouchet et al., 2010), leading to interpretations which are not only influenced by the mechanism studied, but also by the differences in species richness between observed and virtual communities caused by a methodological choice. In this case, the explicit (and more often implicit) principle of not holding constant the species richness of each community can be seen as a computational bias*" [@perronne2017]
+
+- Best model for testing environmental filtering : C4, C5, T3 and T4 [@gotzenberger2016randomizations]
+
+> **C4** : randomize sample abundances within each species across all samples ('frequency' randomization *sensu* `Picante`)
+>
+> - Richness of samples **is not** fixed
+> - Total abundances per sample **is not** fixed
+> - Matrix position **is not** fixed ("*when matrix position is fixed in a randomization, the species that occur in a local community do not change, only their abundances do*")
+> - Number of samples inhabited by each species is fixed ("*fixed frequency*")
+> - Total species abundance is fixed ("*abondance totale de chaque espèces sur l'ensemble des échantillons*")
+>
+> **C5** : randomize species' presence with their abundances
+>
+> - Richness of samples is fixed
+> - Total abundances per sample **is not** fixed
+> - Matrix position **is not** fixed ("*when matrix position is fixed in a randomization, the species that occur in a local community do not change, only their abundances do*")
+> - Number of samples inhabited by each species is fixed ("*fixed frequency*")
+> - Total species abundance is fixed ("*abondance totale de chaque espèces sur l'ensemble des échantillons*")
+>
+> Algorithme Trialswap de la fonction`randomizeMatrix` de `Picante`$\Rightarrow$ **fixed richness** $\oplus$ **fixed colSums : total abundances of species** $\oplus$ **fixed number of occurence per species**
+
+- Best model for testing limiting similarity : C2, T1 and T2 [**ATTENTION** : "In this case, one should never use randomizations that swap abundances or occurrences betwwen sites from different environments, or trait values between species that occur in these different environments", @gotzenberger2016randomizations]
+
+>
+> **A DECRIRE**
+>
+
+## `R` functions
+
+- `permatswap` / `commsimmulator`
+
+In `permatswap`, a special swap algorithm ('swapcount') is implemented that results in permuted matrices with fixed marginals and matrix fill at the same time $\Rightarrow$ fixed total abundances per samples $\oplus$ fixed total abundances per species $\oplus$ fixed porportion of empty cells. **WARNING**: according to simulations, this algorithm seems to be biased and non random, thus its use should be avoided!
+
+The algorithm "abuswap" produces two kinds of null models (based on fixedmar="columns" or fixedmar="rows") as described in Hardy (2008; randomization scheme 2x and 3x, respectively). These preserve column and row occurrences, and column or row sums at the same time. Note that similar constraints can be achieved by the non sequential "swsh" algorithm with fixedmar argument set to "columns" or "rows", respectively. $\Rightarrow$ **pour faire modèle C5 de @gotzenberger2016randomizations ?**
+
+**Exemples d'utilisation**
+
+@de_Bello_2011 : "The results presented refer to the quasiswap method of Miklos & Podani (2004), with 499 randomizations, which satisfies the require- ments for equidistribution of species. The commsimulator function was used to generate null communities (vegan library; R Development Core Team, 2009). The quasiswap method ran- domizes species composition while keeping the number of species per plot in the randomized data fixed (see de Bello et al., 2009, for details)."
+
+> Maintain row and column totals selon l'aide de la fonction : sur présence absence cela préserve la richesse des échantillons mais les données d’abondance, cela devrait préserver les abondances totales des échantillons. Comportement de cette fonction à vérifier	
+
+@laliberte2013 : "The randomization was done using the ‘commsimulator’ function (‘r1′ algorithm) in the vegan R package (R Foundation for Statistical Com- puting, Vienna, AT)."
+
+> "r1": non-sequential algorithm for binary matrices that preserves the site (row) frequencies, but uses column marginal frequencies as probabilities of selecting species.
+
+- `randomizeMatrix` du package `Picante` (voir aussi `phylostruct` )
+
+Currently implemented null models (arguments to null.model):
+> *frequency* : Randomize community data matrix abundances within species (maintains species occurence frequency)
+> *richness* : Randomize community data matrix abundances within samples (maintains sample species richness)
+> *independentswap* : Randomize community data matrix with the independent swap algorithm (Gotelli 2000) maintaining species occurrence frequency and sample species richness
+> *trialswap* : Randomize community data matrix with the trial-swap algorithm (Miklos & Podani 2004) maintaining species occurrence frequency and sample species richness
+
+Le comportement de ces différents algorithme est testé dans la partie [Test](#test)
+
+## Test de significativité
+
+@zhang2018 utilisent un one-sample Wilcoxon signed-rank test. Ils ne précisent par-contre pas si le test est fait en uni- ou bi-latéral. Dans @gotzenberger2016randomizations il le font (avec un test different) en uni-latéral (*i.e.* one-sided) bien qu'ils test en unilatéral des deux cotés avec la même distribution. Cette méthode semble donc inapropriée car elle accroit le risque $\alpha$ pour ce qui parait être un test bilatérale.
+
+> `wilcox.test(x, y = NULL,alternative = c("two.sided", "less", "greater"),mu = 0)`
+
+$\square$ Vérifier comment fonctionne se test
+
+$\square$ Analyser comment le test de significativité se fait dans les autres papiers
+
+---
+
+# <u> **Autres notes importantes** </u>
+
+When trait en related to both filtering and competition, it is virtually impossible to tease environmental filtering or competitive dominance apart [@gotzenberger2016randomizations] $\Rightarrow$ **HI ?**
+
+> Utiliser set.seed : "Initially, there is no seed; a new one is created from the current time and the process ID when one is required. Hence different sessions will give different simulation results, by default. However, the seed might be restored from a previous session if a previously saved workspace is restored.", this is why you would want to call set.seed() with same integer values the next time you want a same sequence of random sequence."
+
+---
+
+# <u> **Extraits méthodes dans la littérature** </u> {#exemples}
+
+- @zhang2018
+
+> Reshuffling the species × quadrat matrices in each spatial scale was done with three constraints simultaneously, following the method of Zhang et al. (2015), i.e., keeping: i) the same number of species (species richness) per plot in the simulated and observed data; ii) the same number of total species occurrences per region (i.e., number of plots where the species occur in each group of the five spatial scales); and iii) the total abundance of species in a region constant (i.e., the sum of the number of quadrats occupied in all plots). We implemented this using the function “randomizeMatrix” in the “picante” package in R (Kembel et al. 2010). We then compared the observed FD to the FD simulated in 1000 randomly assembled communities. The Standard Effect Size index (SES) following Gotelli & McCabe (2002) was used as a measure for FD patterns.[...] We used the Wilcoxon signed-rank tests to examine whether SES is significantly more than, less than or approximately equal to zero, which indicates the prevalence of significant trait divergence, trait convergence, and random distribution, respectively.
+>
+> - Keep site richness $+$ same total species occurences $+$ same species total abundance $\Rightarrow$ model C5 of @gotzenberger2016randomizations.
+>     - This model appears the best to evaluate the signature of environmental filtering according to @gotzenberger2016randomizations with the model C4 but is potentially more appropriate than C4 as it keeps richness constant contrary to model C4, which is a desirable property for the randomization [see appendix 1 of @perronne2017]
+> - Fait avec la fonction `randomizeMatrix` du package `Picante`. Dans @zhang2015, ils ont utilisé la fonction `commsimulator` de `vegan` with the "trialswap" method. Existe aussi dans `randomizeMatrix` mais selon l'aide préserve seulement species occurrence et sample richness. J'ai testé cette méthode (voir [Test](#test)), et elle semble bien aussi préservé l'abondance totale de chaque espèce.
+
+- @laliberte2013
+
+> - $FRic$
+>     - We used a null model approach to test whether the observed functional richness in each plot was lower or higher than expected if metacommunity assembly was not influenced by species traits (i.e. leaf [N] and plant height). To do so, we created 999 random species compo- sition matrices where species richness per plot (i.e. row) was preserved, and where column marginal frequencies were used as probabilities. The randomization was done using the `commsimulator` function (‘r1′ algorithm) in the vegan R package (R Foundation for Statistical Com- puting, Vienna, AT). We then computed standardized deviations from the null expectation (FRicdev) for each plot
+> - $FDis$
+>     -  $FDis$ is related to Rao’s quadratic entropy (Botta-Dukat 2005; Laliberte & Legendre 2010), which is the multivariate analogue of the weighted variance, but **$FDis$ is by construction less sensitive than $Rao’s Q$ to species with extreme trait values.**
+>     - To test for trait divergence, we used a different null model than that described above for functional richness. First, and most importantly, we restricted the randomization between 1 m 9 1-m quadrats within each 8 m 9 50-m plot, in order to detect local-scale assembly processes independent of any filtering effect on species pools (Mason et al. 2011; de Bello et al. 2012). To do so, we kept species abundance matrices for each plot (i.e. 20 quadrats as rows) constant but randomized rows within the species 9 trait matrix (Stubbs & Wilson 2004), using 999 randomizations.
+
+- @astor2014trait_dispersion
+
+> - To test for deviations from random assembly, we used three null models and calcu- lated the standard effect size (SES; Gotelli and McCabe 2002) as (observed a-Rao minus mean of expected a- Rao) divided by standard deviation of expected a-Rao. The observed and expected values were compared, and the significance was tested with one-sided permutation tests (with 999 randomizations) using the function “as.randtest” of the package “ade4” (Dray and Dufour 2007). In one-tailed null model tests, observed values of SES < 1.55 (underdispersion) or >1.55 (overdispersion) indicate significant (a = 0.05) assembly pattern.
+> - The randomization procedure was carried out with the trial swap method of Miklos and Podani (2004) implemented in R (R core team) with the `randomizeMatrix` function of the package `picante` (Kembel et al. 2010) with 999 randomizations.
+>     - **Model 1** : In the first null model, we randomized communities (species x plots matrix) by reshuffling the species identity among islands while keeping the same number of species per site and the same total species occurrence frequency in the whole region and calculated the abundance-weighted a-Rao for each random community. This represents the original Rao index comprising both functional richness and functional divergence.
+>     - **Model 2** : For the second null model, we randomized the abundances among species within communities and calculated the abundance-weighted Rao. This converts the Rao into a pure divergence component.
+>          - <u> Voir @botta_dukat2016 pour pertinence de ce modèle </u>
+>     - **Model 3** : For the third null model, we again used the trial swap randomization, but calcu- lated the Rao based on species occurrences (presence/ absence) only. This resembles the functional richness component.
+
+- @marteinsdottir2018
+
+> For trait-divergence, we used randomization that swaps abundances across all species occurring in the observed species pool
+>
+>   - Correspond à modèle C2 de @gotzenberger2016randomizations et au modèle "richness" du package `Picante` qui est approprié pour détecter la divergence lié à l'effet d'une *limiting similarity* si la randomization est faite au sein de chaque site.
+>
+> For trait-convergence, we used a model that exchanges species abundances across plots.
+>
+>   - Correspond au modèle C4 de @gotzenberger2016randomizations et au modèle "frequency" du package `Picante` qui est approprié pour détecter la convergence lié à l'effet des filtres environnementaux si les gradients environnementaux sont suffisant et si le pool d'espèce randomisé permet d'inclure des espèces dans un habitat dans lequelle elle sont exclue en réalité du fait des processus de filtration
+
+---
+
+# Test {#test}
+
+## randomizeMatrix
+
+### Randomisation avec le modèle "trialswap"
+
+```{r}
+
+data(mite)
+
+## Diversité des sites
+
+#specnumber(mite)
+
+## Abondance par site
+
+#rowSums(mite)
+
+## Abondance par espèce
+
+#colSums(mite)
+
+## Occurrence par espèces
+
+#specnumber(mite, MARGIN=2)
+
+# Trialswap
+#-----------
+tmp <- randomizeMatrix(mite, null.model="trialswap", iterations = 10000)
+```
+
+La matrice randomisée est-elle identique à l'originale?
+
+```{r}
+# La matrice randomisée est-elle identique à l'originale?
+isTRUE(all.equal(mite,tmp))
+```
+
+Diversité des sites préservée ?
+
+```{r}
+# Diversité des sites préservée ?
+all(specnumber(tmp) == specnumber(mite))
+```
+
+Abondance par site préservée ?
+
+```{r}
+# Abondance par site préservée ?
+all(rowSums(tmp) == rowSums(mite))
+```
+
+Abondance par espèce?
+
+```{r}
+# Abondance par espèce?
+all(colSums(tmp) == colSums(mite))
+```
+
+Occurence des espèces préservée ?
+
+```{r}
+# Occurence des espèces préservée ?
+all(specnumber(tmp, MARGIN=2)==specnumber(mite, MARGIN=2))
+```
+
+### Randomisation avec le modèle "richness"
+
+```{r}
+# Richness
+#---------
+tmp <- randomizeMatrix(mite, null.model="richness", iterations = 10000)
+```
+
+La matrice randomisée est-elle identique à l'originale?
+
+```{r}
+# La matrice randomisée est-elle identique à l'originale?
+isTRUE(all.equal(mite,tmp))
+```
+
+Diversité des sites préservée ?
+
+```{r}
+# Diversité des sites préservée ?
+all(specnumber(tmp) == specnumber(mite))
+```
+
+Abondance par site préservée ?
+
+```{r}
+# Abondance par site préservée ?
+all(rowSums(tmp) == rowSums(mite))
+```
+
+Abondance par espèce?
+
+```{r}
+# Abondance par espèce?
+all(colSums(tmp) == colSums(mite))
+```
+
+Occurence des espèces préservée ?
+
+```{r}
+# Occurence des espèces préservée ?
+all(specnumber(tmp, MARGIN=2)==specnumber(mite, MARGIN=2))
+```
+
+### Randomisation avec le modèle "frequency"
+
+```{r}
+# Frequency
+#---------
+tmp <- randomizeMatrix(mite, null.model="frequency", iterations = 10000)
+```
+
+La matrice randomisée est-elle identique à l'originale?
+
+```{r}
+# La matrice randomisée est-elle identique à l'originale?
+isTRUE(all.equal(mite,tmp))
+```
+
+Diversité des sites préservée ?
+
+```{r}
+# Diversité des sites préservée ?
+all(specnumber(tmp) == specnumber(mite))
+```
+
+Abondance par site préservée ?
+
+```{r}
+# Abondance par site préservée ?
+all(rowSums(tmp) == rowSums(mite))
+```
+
+Abondance par espèce?
+
+```{r}
+# Abondance par espèce?
+all(colSums(tmp) == colSums(mite))
+```
+
+Occurence des espèces préservée ?
+
+```{r}
+# Occurence des espèces préservée ?
+all(specnumber(tmp, MARGIN=2)==specnumber(mite, MARGIN=2))
+```
+
+### Bialn
+
+```{r, echo=F}
+
+text_tbl <- data.frame(
+"Null models" = c("Trialswap", "Richness", "Frequency"), "Site richness" = c("Oui", "Oui", "Non"), "Site abundance"=c("Non","Oui","Non"), "Species total abundance"=c("Oui","Non","Oui"), "Species total occurence"=c("Oui","Non","Oui"))
+
+kable(text_tbl, format = "html", booktabs = T) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = TRUE)
+
+```
+
+## Permatswap / Commsimulator
+
+```{r}
+
+data(mite)
+
+tmp <- permatswap(mite,method="abuswap", fixedmar="columns",times=1)
+```
+
+La matrice randomisée est-elle identique à l'originale?
+
+```{r}
+# La matrice randomisée est-elle identique à l'originale?
+isTRUE(all.equal(mite,tmp$perm[[1]]))
+```
+
+Diversité des sites préservée ?
+
+```{r}
+# Diversité des sites préservée ?
+all(specnumber(tmp$perm[[1]]) == specnumber(mite))
+```
+
+Abondance par site préservée ?
+
+```{r}
+# Abondance par site préservée ?
+all(rowSums(tmp$perm[[1]]) == rowSums(mite))
+```
+
+Abondance par espèce?
+
+```{r}
+# Abondance par espèce?
+all(colSums(tmp$perm[[1]]) == colSums(mite))
+```
+
+Occurence des espèces préservée ?
+
+```{r}
+# Occurence des espèces préservée ?
+all(specnumber(tmp$perm[[1]], MARGIN=2)==specnumber(mite, MARGIN=2))
+```
+
+> permatswap(x,method="abuswap", fixedmar="columns") équivaut à randomizeMatrix(x,null.model=="trialswap")
+> Est-ce que ça donne la même 
+
+```{r}
+commsimulator(mite,method="r1")
+
+tmp <- simulate(nullmodel(mite,method="r1"), seed=1, nsim=10)
+
+my_rao <- function(x){
+  tmp <- rao.diversity(x)
+  }
+
+oecosimu(comm = sipoo, nestfun = , method = "swap",
+burnin = 100, thin = 10, statistic = "evals")
+
+```
+
+
+---
+
+# Bilbiographie

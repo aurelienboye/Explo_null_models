@@ -1,0 +1,222 @@
+bplist00�_WebMainResource�	
+^WebResourceURL_WebResourceFrameName_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingName_Ehttps://stat.ethz.ch/pipermail/r-sig-ecology/2014-October/004775.htmlPO,�<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+   <title> [R-sig-eco] null model selection in functional diversity	analysis
+   </title>
+   <link rel="Index" href="index.html">
+   <link rel="made" href="mailto:r-sig-ecology%40r-project.org?Subject=Re%3A%20%5BR-sig-eco%5D%20null%20model%20selection%20in%20functional%20diversity%0A%09analysis&amp;In-Reply-To=%3CCACg2Sf3eTM8ZYuNR8bHHC8XqFczVNWw91%2BEBFxnTu1s_GB-tSA%40mail.gmail.com%3E">
+   <meta name="robots" content="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <link rel="Previous" href="004758.html">
+   <link rel="Next" href="004755.html">
+ </head>
+ <body bgcolor="#ffffff">
+   <h1>[R-sig-eco] null model selection in functional diversity	analysis</h1>
+    <b>Marc Taylor</b> 
+    <a href="mailto:r-sig-ecology%40r-project.org?Subject=Re%3A%20%5BR-sig-eco%5D%20null%20model%20selection%20in%20functional%20diversity%0A%09analysis&amp;In-Reply-To=%3CCACg2Sf3eTM8ZYuNR8bHHC8XqFczVNWw91%2BEBFxnTu1s_GB-tSA%40mail.gmail.com%3E" title="[R-sig-eco] null model selection in functional diversity	analysis">marchtaylor at gmail.com
+       </a><br>
+    <i>Mon Oct 27 17:11:41 CET 2014</i>
+    <p></p><ul>
+        <li>Previous message: <a href="004758.html">[R-sig-eco] null model selection in functional diversity	analysis
+</a></li>
+        <li>Next message: <a href="004755.html">[R-sig-eco] variance partitioning: vegan
+</a></li>
+         <li> <b>Messages sorted by:</b> 
+              <a href="date.html#4775">[ date ]</a>
+              <a href="thread.html#4775">[ thread ]</a>
+              <a href="subject.html#4775">[ subject ]</a>
+              <a href="author.html#4775">[ author ]</a>
+         </li>
+       </ul>
+    <hr>  
+<!--beginarticle-->
+<pre>Dear Zoltan,
+
+Thank you for this interesting suggestion. I'm wondering if you might be
+able to suggest any papers that have used this approach in past?
+
+It does have the advantage of maintaining many of the community patterns
+that are often associated with functional diversity indices - i.e. total
+site abundance, site diversity, and site richness. However, one
+preoccupation that we have is that it creates new types of species (with
+their associated combinations of traits) that don't occur in nature. I
+believe this would have the effect of creating a null distribution of
+higher variance than observed. Using this approach, we do in fact see that
+the SES of the effect to diversity indices is always lower than the null
+distribution - This is interesting along the lines of our hypothesis
+because it demonstrates the degree of trait filtering by a site.
+Nevertheless, I worry about the increased variance and wonder if this is
+one of the reasons why a majority of papers in this field randomize the
+abundance matrix rather than the trait one.
+
+Cheers and thanks again for your help,
+Marc
+
+
+
+On Thu, Oct 23, 2014 at 9:33 PM, Zoltan Botta-Dukat &lt;
+<a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">botta-dukat.zoltan at okologia.mta.hu</a>&gt; wrote:
+
+&gt;<i> Dear Marc,
+</i>&gt;<i>
+</i>&gt;<i> Try the permutation of trait values! Such permutation does not change any
+</i>&gt;<i> of the patterns that you mentioned and probably wanted to be constrained.
+</i>&gt;<i> On the other hand, it removes the correlation between traits and
+</i>&gt;<i> environment, and also correlation between traits and abundance.
+</i>&gt;<i>
+</i>&gt;<i> Cheers,
+</i>&gt;<i> Zoltan
+</i>&gt;<i>
+</i>&gt;<i>
+</i>&gt;<i> 2014.10.23. 11:43 keltezéssel, Marc Taylor írta:
+</i>&gt;<i>
+</i>&gt;<i>  Dear r-sig-ecology listers,
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> I am involved in a study whose objective is the see if there relationships
+</i>&gt;&gt;<i> between the functional diversity of the fish community and environmental
+</i>&gt;&gt;<i> factors of the sample site for a number of sites in a bounded environment.
+</i>&gt;&gt;<i> Specifically, we are looking at the parameters of functional richness
+</i>&gt;&gt;<i> ("FRic") and functional diversity ("RaoQ") as calculated by the R package
+</i>&gt;&gt;<i> "FD". We observe certain trends in these indices as related to the
+</i>&gt;&gt;<i> environmental factors in question, and would now like to determine if the
+</i>&gt;&gt;<i> effect of their deviation from a null model is significant or not.
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> Given the fact that FRic and RaoQ are often correlated with the richness
+</i>&gt;&gt;<i> and diversity, respectively, of the community, many null models are
+</i>&gt;&gt;<i> designed to remove these effects by permutating the abundance matrix while
+</i>&gt;&gt;<i> maintaining the functional trait matrix constant.
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> Null model descriptions:
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> 1. Own null model - Our first attempt has been to permutate the site
+</i>&gt;&gt;<i> association of individual fishes to site (see function "ownNull" below).
+</i>&gt;&gt;<i> The
+</i>&gt;&gt;<i> result of the null model is that abundance values for sites (rows) and
+</i>&gt;&gt;<i> species (columns) are maintained. The original idea was that we wanted to
+</i>&gt;&gt;<i> maintain the overall site capacity to sustain a certain number of
+</i>&gt;&gt;<i> individuals. Also, since certain species are linked with higher
+</i>&gt;&gt;<i> abundances,
+</i>&gt;&gt;<i> these total abundances should be maintained. The rationale was that in the
+</i>&gt;&gt;<i> absence of site-specific environmental controls on species identity,
+</i>&gt;&gt;<i> individuals would roam at random over the entire study region and end up
+</i>&gt;&gt;<i> randomly at the individual sites, each of which has a certain carrying
+</i>&gt;&gt;<i> capacity determining the number of individuals per site, but not their
+</i>&gt;&gt;<i> identity.
+</i>&gt;&gt;<i> Summary of constrained patterns:
+</i>&gt;&gt;<i>      * site abundance (yes)
+</i>&gt;&gt;<i>      * site diversity (no)
+</i>&gt;&gt;<i>      * site richness (no)
+</i>&gt;&gt;<i>      * global spp abundance (yes)
+</i>&gt;&gt;<i>      * global spp frequency distribution (no)
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> 2. Independent swap (Gotelli, 2000) - This model also permutates species
+</i>&gt;&gt;<i> association to site, but randomizes matrix values (i.e. packets of
+</i>&gt;&gt;<i> observed
+</i>&gt;&gt;<i> individuals), with the additional constraint that accepted permutations
+</i>&gt;&gt;<i> must maintain site richness (i.e. total number of spp). This model seems
+</i>&gt;&gt;<i> in
+</i>&gt;&gt;<i> line with some of our original assumptions, but differs in that it focuses
+</i>&gt;&gt;<i> more on site richness and maintains global species frequency
+</i>&gt;&gt;<i> distributions,
+</i>&gt;&gt;<i> i.e. it takes the abundance values of species observed at each site and
+</i>&gt;&gt;<i> randomly assigns them to new sites. My coauthors worried about this last
+</i>&gt;&gt;<i> point - since it locks in large abundance values which might have been
+</i>&gt;&gt;<i> very
+</i>&gt;&gt;<i> much a product of site, and therefore abundance at site is not
+</i>&gt;&gt;<i> constrained.
+</i>&gt;&gt;<i> Summary of constrained patterns:
+</i>&gt;&gt;<i>      * site abundance (no)
+</i>&gt;&gt;<i>      * site diversity (no)
+</i>&gt;&gt;<i>      * site richness (yes)
+</i>&gt;&gt;<i>      * global spp abundance (yes)
+</i>&gt;&gt;<i>      * global spp frequency distribution (yes)
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> We would ultimately like to quantify the effect of these environmental
+</i>&gt;&gt;<i> factors on our observed FRic and RaoQ indices, and thus were quantifying
+</i>&gt;&gt;<i> the standardized effect size (SES) based on the null model distribution.
+</i>&gt;&gt;<i> Since
+</i>&gt;&gt;<i> only the independent swap method maintains richness, this would seem to be
+</i>&gt;&gt;<i> appropriate for determining FRic. For RaoQ, neither option maintains
+</i>&gt;&gt;<i> diversity, so are either appropriate? Are more than one null model needed?
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> So, we have two main questions:
+</i>&gt;&gt;<i> 1. What would be an appropriate null model given our objectives - One of
+</i>&gt;&gt;<i> these, or another suggestion?
+</i>&gt;&gt;<i> 2. Another aspect discussed on this list before (
+</i>&gt;&gt;<i> <a href="https://stat.ethz.ch/pipermail/r-sig-ecology/2010-January/001003.html">https://stat.ethz.ch/pipermail/r-sig-ecology/2010-January/001003.html</a>),
+</i>&gt;&gt;<i> concerns that of the uniqueness of the permutated null models (especially
+</i>&gt;&gt;<i> applicable given the constraints of the independent swap algorithm) as
+</i>&gt;&gt;<i> well
+</i>&gt;&gt;<i> as the overall variability in null models. Calculating the number of
+</i>&gt;&gt;<i> unique
+</i>&gt;&gt;<i> permutated matrices is easy enough, but how would one assess whether null
+</i>&gt;&gt;<i> model variability is of a similar magnitude to that of the original data?
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> Many thanks in advance for any help on these issues. An example script
+</i>&gt;&gt;<i> illustrating these issues can be found below.
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i> Cheers,
+</i>&gt;&gt;<i> Marc
+</i>&gt;&gt;<i>
+</i>&gt;&gt;<i>  Botta-Dukát Zoltán
+</i>&gt;<i> --------------------------------
+</i>&gt;<i> Ökológiai és Botanikai Intézet
+</i>&gt;<i> Magyar Tudományos Akadémia
+</i>&gt;<i> Ökológiai Kutatóközpont
+</i>&gt;<i> --------------------------------
+</i>&gt;<i> 2163. Vácrátót, Alkotmány u. 2-4.
+</i>&gt;<i> tel: +36 28 360122/157
+</i>&gt;<i> fax: +36 28 360110
+</i>&gt;<i> <a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">botta-dukat.zoltan at okologia.mta.hu</a>
+</i>&gt;<i> www.okologia.mta.hu
+</i>&gt;<i>
+</i>&gt;<i>
+</i>&gt;<i> Zoltán BOTTA-Dukát
+</i>&gt;<i> --------------------------------
+</i>&gt;<i> Institute of Ecology and Botany
+</i>&gt;<i> Hungarian Academy of Sciences
+</i>&gt;<i> Centre for Ecological Research
+</i>&gt;<i> --------------------------------
+</i>&gt;<i> H-2163 Vácrátót, Alkomány u. 2-4.
+</i>&gt;<i> HUNGARY
+</i>&gt;<i> Phone: +36 28 360122/157
+</i>&gt;<i> Fax..: +36 28 360110
+</i>&gt;<i> <a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">botta-dukat.zoltan at okologia.mta.hu</a>
+</i>&gt;<i> www.okologia.mta.hu
+</i>&gt;<i>
+</i>&gt;<i> _______________________________________________
+</i>&gt;<i> R-sig-ecology mailing list
+</i>&gt;<i> <a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">R-sig-ecology at r-project.org</a>
+</i>&gt;<i> <a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">https://stat.ethz.ch/mailman/listinfo/r-sig-ecology</a>
+</i>&gt;<i>
+</i>
+	[[alternative HTML version deleted]]
+
+</pre>
+
+<!--endarticle-->
+    <hr>
+    <p></p><ul>
+        <!--threads-->
+	<li>Previous message: <a href="004758.html">[R-sig-eco] null model selection in functional diversity	analysis
+</a></li>
+	<li>Next message: <a href="004755.html">[R-sig-eco] variance partitioning: vegan
+</a></li>
+         <li> <b>Messages sorted by:</b> 
+              <a href="date.html#4775">[ date ]</a>
+              <a href="thread.html#4775">[ thread ]</a>
+              <a href="subject.html#4775">[ subject ]</a>
+              <a href="author.html#4775">[ author ]</a>
+         </li>
+       </ul>
+
+<hr>
+<a href="https://stat.ethz.ch/mailman/listinfo/r-sig-ecology">More information about the R-sig-ecology
+mailing list</a><br>
+
+</body></html>Ytext/htmlUUTF-8    ( 7 N ` v � � �-�-�                           -�
